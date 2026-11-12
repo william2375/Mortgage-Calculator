@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>日式奶茶風房貸計算器</title>
+    
+    <!-- PWA Meta Tags for iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="房貸計算">
+    <meta name="theme-color" content="#F7F3ED">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        milkbg: '#F7F3ED',
+                        milksurface: '#FFFCF8',
+                        milktext: '#493D35',
+                        milksub: '#8A7B70',
+                        milkprimary: '#A68A72',
+                        milkaccent: '#C7AE96',
+                        milkborder: '#E8DED2',
+                        chart1: '#C7AE96',
+                        chart2: '#A68A72',
+                        chart3: '#D8BDA5'
+                    },
+                    fontFamily: {
+                        sans: ['"DM Sans"', '"Noto Sans TC"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background-color: #F7F3ED;
+            color: #493D35;
+            font-family: "DM Sans", "Noto Sans TC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        input, select, button {
+            font-size: 16px !important; /* Prevent iOS zoom on focus */
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F7F3ED;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D8BDA5;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #A68A72;
+        }
+    </style>
+
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+    <meta name="mobile-web-app-capable" content="yes">
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-[#C7AE96]/30 selection:text-[#493D35]">
+
+    <!-- Header -->
+    <header class="bg-[#FFFCF8] border-b border-[#E8DED2] sticky top-0 z-30 shadow-sm backdrop-blur-md bg-opacity-90">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-[#A68A72] text-[#FFFCF8] flex items-center justify-center font-bold text-lg shadow-inner">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight text-[#493D35]">日式奶茶風房貸計算器</h1>
+                    <p class="text-xs text-[#8A7B70]">高質感財務規劃與提前還款試算工具</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <button onclick="openInstallModal()" class="px-3 py-1.5 rounded-xl bg-[#E8DED2]/50 hover:bg-[#E8DED2] text-[#493D35] text-xs font-medium transition-colors flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-[#A68A72]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    安裝至主畫面
+                </button>
+                <button onclick="confirmResetDefaults()" class="px-3 py-1.5 rounded-xl border border-[#E8DED2] hover:bg-red-50 text-[#8A7B70] hover:text-red-600 text-xs font-medium transition-colors">
+                    重設預設值
+                </button>
+            </div>
+        </div>
+        
+        <!-- Tab Navigation Bar -->
+        <div class="max-w-4xl mx-auto px-4 pb-2">
+            <div class="grid grid-cols-3 gap-2 bg-[#F7F3ED] p-1.5 rounded-2xl border border-[#E8DED2]">
+                <button onclick="switchTab('settings')" id="tab-btn-settings" class="py-2.5 px-3 rounded-xl text-xs sm:text-sm font-medium transition-all text-center flex items-center justify-center gap-1.5">
+                    貸款設定
+                </button>
+                <button onclick="switchTab('results')" id="tab-btn-results" class="py-2.5 px-3 rounded-xl text-xs sm:text-sm font-medium transition-all text-center flex items-center justify-center gap-1.5">
+                    試算結果
+                </button>
+                <button onclick="switchTab('schedule')" id="tab-btn-schedule" class="py-2.5 px-3 rounded-xl text-xs sm:text-sm font-medium transition-all text-center flex items-center justify-center gap-1.5">
+                    還款明細
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-4xl w-full mx-auto px-4 py-6">
+
+        <!-- TAB 1: 貸款設定 -->
+        <section id="tab-settings" class="space-y-6">
+            <!-- 基本貸款條件 Card -->
+            <div class="bg-[#FFFCF8] rounded-3xl p-6 border border-[#E8DED2] shadow-sm space-y-6">
+                <div class="flex items-center justify-between border-b border-[#E8DED2] pb-4">
+                    <h2 class="text-base font-bold text-[#493D35] flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-[#A68A72]"></span>
+                        基本貸款條件
+                    </h2>
+                    <span class="text-xs text-[#8A7B70]">數值修改後即時計算</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 房屋總價 -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-semibold text-[#8A7B70] uppercase tracking-wider">房屋總價 (NT$)</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-[#8A7B70] font-medium">NT$</span>
+                            <input type="number" id="housePrice" min="0" step="100000" class="w-full pl-14 pr-4 py-3 rounded-2xl bg-[#F7F3ED] border border-[#E8DED2] focus:outline-none focus:border-[#A68A72] text-[#493D35] font-semibold transition-colors" oninput="handleInputChange()">
+                        </div>
+                    </div>
+
+                    <!-- 年利率 -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-semibold text-[#8A7B70] uppercase tracking-wider">年利率 (%)</label>
+                        <div class="relative">
+                            <input type="number" id="interestRate" min="0" max="15" step="0.01" class="w-full pl-4 pr-10 py-3 rounded-2xl bg-[#F7F3ED] border border-[#E8DED2] focus:outline-none focus:border-[#A68A72] text-[#493D35] font-semibold transition-colors" oninput="handleInputChange()">
+                            <span class="absolute inset-y-0 right-0 pr-4 flex items-center text-[#8A7B70] font-medium">%</span>
+                        </div>
+                    </div>
+
+                    <!-- 自備款比例與金額 -->
+                    <div class="space-y-2 md:col-span-2 bg-[#F7F3ED] p-4 rounded-2xl border border-[#E8DED2]/60">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-xs font-semibold text-[#8A7B70] uppercase tracking-wider">自備款比例</label>
+                            <span id="downPaymentRatioText" class="text-sm font-bold text-[#A68A72]">30%</span>
+                        </div>
+                        <input type="range" id="downPaymentRatio" min="0" max="90" step="1" value="30" class="w-full accent-[#A68A72] cursor-pointer h-2 bg-[#E8DED2] rounded-lg" oninput="handleSliderInput()">
+                        <div class="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-[#E8DED2] text-sm">
+                            <div>
+                                <span class="text-xs text-[#8A7B70] block">自備款金額</span>
+                                <span id="downPaymentAmountText" class="font-bold text-[#493D35]">NT$ 0</span>
+                            </div>
+                            <div>
+                                <span class="text-xs text-[#8A7B70] block">貸款本金 (試算基準)</span>
+                                <span id="loanPrincipalText" class="font-bold text-[#A68A72]">NT$ 0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 貸款年限 -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-semibold text-[#8A7B70] uppercase tracking-wider">貸款年限</label>
+                        <select id="loanTermYears" class="w-full px-4 py-3 rounded-2xl bg-[#F7F3ED] border border-[#E8DED2] focus:outline-none focus:border-[#A68A72] text-[#493D35] font-semibold transition-colors" onchange="handleInputChange()">
+                            <option value="5">5 年 (60 期)</option>
+                            <option value="10">10 年 (120 期)</option>
+                            <option value="15">15 年 (180 期)</option>
+                            <option value="20">20 年 (240 期)</option>
+                            <option value="25">25 年 (300 期)</option>
+                            <option value="30" selected>30 年 (360 期)</option>
+                            <option value="35">35 年 (420 期)</option>
+                            <option value="40">40 年 (480 期)</option>
+                        </select>
+                    </div>
+
+                    <!-- 寬限期 -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-semibold text-[#8A7B70] uppercase tracking-wider">寬限期 (只繳利息)</label>
+                        <select id="gracePeriodYears" class="w-full px-4 py-3 rounded-2xl bg-[#F7F3ED] border border-[#E8DED2] focus:outline-none focus:border-[#A68A72] text-[#493D35] font-semibold transition-colors" onchange="handleInputChange()">
+                            <option value="0" selected>0 年 (無寬限期)</option>
+                            <option value="1">1 年 (12 期)</option>
+                            <option value="2">2 年 (24 期)</option>
+                            <option value="3">3 年 (36 期)</option>
+                            <option value="4">4 年 (48 期)</option>
+                            <option value="5">5 年 (60 期)</option>
+                        </select>
+                    </div>
+
+                    <!-- 還款方式 -->
+                    <div class="space-y-2 md:col-span-2">
+                        <label class="block text-xs font-semibold text-[#8A7B70] uppercase tracking-wider mb-1">還款方式</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="flex items-center p-3.5 rounded-2xl border border-[#E8DED2] bg-[#F7F3ED] cursor-pointer hover:border-[#A68A72] transition-all has-[:checked]:bg-[#FFFCF8] has-[:checked]:border-[#A68A72] has-[:checked]:shadow-sm">
+                                <input type="radio" name="repaymentMethod" value="equal-payment" checked class="accent-[#A68A72] w-4 h-4" onchange="handleInputChange()">
+                                <div class="ml-3">
+                                    <span class="block text-sm font-bold text-[#493D35]">本息平均攤還</span>
+                                    <span class="block text-xs text-[#8A7B70]">每月月付金額固定</span>
+                                </div>
+                            </label>
+                            <label class="flex items-center p-3.5 rounded-2xl border border-[#E8DED2] bg-[#F7F3ED] cursor-pointer hover:border-[#A68A72] transition-all has-[:checked]:bg-[#FFFCF8] has-[:checked]:border-[#A68A72] has-[:checked]:shadow-sm">
+                                <input type="radio" name="repaymentMethod" value="equal-principal" class="accent-[#A68A72] w-4 h-4" onchange="handleInputChange()">
+                                <div class="ml-3">
+                                    <span class="block text-sm font-bold text-[#493D35]">本金平均攤還</span>
+                                    <span class="block text-xs text-[#8A7B70]">每月本金固定，月付遞減</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 flex justify-end">
+                    <button onclick="switchTab('results')" class="px-6 py-3 rounded-2xl bg-[#A68A72] hover:bg-[#8A7B70] text-[#FFFCF8] font-semibold text-sm shadow-sm transition-colors flex items-center gap-2">
+                        查看試算結果
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 提前還款設定 Card -->
+            <div class="bg-[#FFFCF8] rounded-3xl p-6 border border-[#E8DED2] shadow-sm space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#E8DED2] pb-4 gap-3">
+                    <div>
+                        <h2 class="text-base font-bold text-[#493D35] flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-[#C7AE96]"></span>
+                            中途提前還款設定
+                        </h2>
+                        <p class="text-xs text-[#8A7B70]">可設定多筆中途大額還款或定期大額清償</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="prepaymentEnabled" class="sr-only peer" onchange="togglePrepaymentToggle()">
+                        <div class="w-11 h-6 bg-[#E8DED2] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#E8DED2] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#A68A72]"></div>
+                        <span class="ml-3 text-xs font-semibold text-[#493D35]">啟用提前還款</span>
+                    </label>
+                </div>
+
+                <div id="prepaymentSectionContent" class="space-y-4 opacity-40 pointer-events-none transition-opacity">
+                    <!-- 新增提前還款表單 -->
+                    <div class="bg-[#F7F3ED] p-4 rounded-2xl border border-[#E8DED2] grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                        <div>
+                            <label class="block text-xs font-semibold text-[#8A7B70] mb-1">發生期數 (第幾期)</label>
+                            <input type="number" id="newPrepayPeriod" min="1" max="480" value="36" class="w-full px-3 py-2.5 rounded-xl bg-[#FFFCF8] border border-[#E8DED2] text-[#493D35] font-semibold">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-[#8A7B70] mb-1">提前還款金額 (NT$)</label>
+                            <input type="number" id="newPrepayAmount" min="10000" step="10000" value="300000" class="w-full px-3 py-2.5 rounded-xl bg-[#FFFCF8] border border-[#E8DED2] text-[#493D35] font-semibold">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-[#8A7B70] mb-1">處理方式</label>
+                            <div class="flex gap-2">
+                                <select id="newPrepayType" class="flex-1 px-3 py-2.5 rounded-xl bg-[#FFFCF8] border border-[#E8DED2] text-[#493D35] font-semibold text-sm">
+                                    <option value="reduce-payment">降低每月月付金</option>
+                                    <option value="reduce-term">縮短貸款年限</option>
+                                </select>
+                                <button onclick="addPrepaymentEvent()" class="px-4 py-2.5 bg-[#A68A72] hover:bg-[#8A7B70] text-[#FFFCF8] rounded-xl font-semibold text-sm transition-colors whitespace-nowrap">
+                                    新增
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 已設定的提前還款清單 -->
+                    <div class="space-y-2">
+                        <h3 class="text-xs font-semibold text-[#8A7B70] uppercase tracking-wider">已設定的提前還款紀錄</h3>
+                        <div id="prepaymentListContainer" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                            <!-- 動態插入 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: 試算結果 -->
+        <section id="tab-results" class="space-y-6 hidden">
+            <!-- 核心財務摘要卡片 -->
+            <div class="bg-[#FFFCF8] rounded-3xl p-6 border border-[#E8DED2] shadow-sm space-y-6">
+                <div class="flex items-center justify-between border-b border-[#E8DED2] pb-4">
+                    <h2 class="text-base font-bold text-[#493D35] flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-[#A68A72]"></span>
+                        財務分析與月付摘要
+                    </h2>
+                    <span id="resultLoanMethodBadge" class="px-3 py-1 rounded-full bg-[#F7F3ED] text-[#A68A72] font-bold text-xs border border-[#E8DED2]">本息平均攤還</span>
+                </div>
+
+                <!-- 關鍵指標 Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="bg-[#F7F3ED] p-4 rounded-2xl border border-[#E8DED2]/60">
+                        <span class="text-xs text-[#8A7B70] block mb-1">房屋總價</span>
+                        <span id="resHousePrice" class="text-base sm:text-lg font-bold text-[#493D35]">NT$ 0</span>
+                    </div>
+                    <div class="bg-[#F7F3ED] p-4 rounded-2xl border border-[#E8DED2]/60">
+                        <span class="text-xs text-[#8A7B70] block mb-1">貸款本金</span>
+                        <span id="resLoanPrincipal" class="text-base sm:text-lg font-bold text-[#A68A72]">NT$ 0</span>
+                    </div>
+                    <div class="bg-[#F7F3ED] p-4 rounded-2xl border border-[#E8DED2]/60">
+                        <span class="text-xs text-[#8A7B70] block mb-1">總償還利息</span>
+                        <span id="resTotalInterest" class="text-base sm:text-lg font-bold text-[#8A7B70]">NT$ 0</span>
+                    </div>
+                    <div class="bg-[#F7F3ED] p-4 rounded-2xl border border-[#E8DED2]/60">
+                        <span class="text-xs text-[#8A7B70] block mb-1">本息總支出</span>
+                        <span id="resTotalPayment" class="text-base sm:text-lg font-bold text-[#493D35]">NT$ 0</span>
+                    </div>
+                </div>
+
+                <!-- 每月月付金詳情 -->
+                <div class="bg-[#F7F3ED] p-5 rounded-2xl border border-[#E8DED2] space-y-4">
+                    <h3 class="text-xs font-semibold text-[#8A7B70] uppercase tracking-wider">每月月付金變化</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div id="gracePeriodPaymentBox" class="hidden bg-[#FFFCF8] p-3.5 rounded-xl border border-[#E8DED2]">
+                            <span class="text-xs text-[#8A7B70] block">寬限期月付金 (只繳利息)</span>
+                            <span id="resGracePayment" class="text-base font-bold text-[#493D35]">NT$ 0</span>
+                        </div>
+                        <div class="bg-[#FFFCF8] p-3.5 rounded-xl border border-[#E8DED2]">
+                            <span class="text-xs text-[#8A7B70] block" id="monthlyPaymentLabel">正常期月付金</span>
+                            <span id="resMonthlyPayment" class="text-base font-bold text-[#A68A72]">NT$ 0</span>
+                        </div>
+                        <div class="bg-[#FFFCF8] p-3.5 rounded-xl border border-[#E8DED2]">
+                            <span class="text-xs text-[#8A7B70] block">預計結清期數 / 年限</span>
+                            <span id="resPayoffPeriod" class="text-base font-bold text-[#493D35]">360 期 (30 年)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 圖表與結構比例 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center pt-2">
+                    <div class="flex flex-col items-center justify-center p-4 bg-[#F7F3ED] rounded-2xl border border-[#E8DED2]">
+                        <h3 class="text-xs font-semibold text-[#8A7B70] uppercase tracking-wider mb-3">本金與利息支出結構</h3>
+                        <div id="chartContainer" class="w-48 h-48 relative flex items-center justify-center">
+                            <!-- SVG Donut Chart -->
+                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#E8DED2" stroke-width="16"></circle>
+                                <circle id="chartPrincipalRing" cx="50" cy="50" r="40" fill="transparent" stroke="#C7AE96" stroke-width="16" stroke-dasharray="251.2" stroke-dashoffset="0"></circle>
+                                <circle id="chartInterestRing" cx="50" cy="50" r="40" fill="transparent" stroke="#A68A72" stroke-width="16" stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                                <span class="text-xs text-[#8A7B70]">利息占比</span>
+                                <span id="resInterestRatio" class="text-sm font-bold text-[#493D35]">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-3.5 rounded-2xl bg-[#F7F3ED] border border-[#E8DED2]">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-3.5 h-3.5 rounded-full bg-[#C7AE96]"></span>
+                                <span class="text-sm font-medium text-[#493D35]">償還本金總額</span>
+                            </div>
+                            <span id="resLegendPrincipal" class="font-bold text-[#493D35]">NT$ 0</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3.5 rounded-2xl bg-[#F7F3ED] border border-[#E8DED2]">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-3.5 h-3.5 rounded-full bg-[#A68A72]"></span>
+                                <span class="text-sm font-medium text-[#493D35]">支付利息總額</span>
+                            </div>
+                            <span id="resLegendInterest" class="font-bold text-[#493D35]">NT$ 0</span>
+                        </div>
+                        <div class="p-3.5 rounded-2xl bg-[#F7F3ED]/50 border border-[#E8DED2] text-xs text-[#8A7B70] leading-relaxed">
+                            提示：本試算以固定利率估算。如需查閱各期詳細本息攤還情況，請點選下方按鈕或切換至「還款明細」分頁。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 提前還款比較 Card (僅在啟用時顯示) -->
+            <div id="prepaymentComparisonCard" class="hidden bg-[#FFFCF8] rounded-3xl p-6 border border-[#A68A72]/40 shadow-sm space-y-6">
+                <div class="flex items-center justify-between border-b border-[#E8DED2] pb-4">
+                    <h2 class="text-base font-bold text-[#493D35] flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-[#A68A72]"></span>
+                        提前還款效益比較分析
+                    </h2>
+                    <span class="px-3 py-1 rounded-full bg-[#A68A72]/10 text-[#A68A72] font-bold text-xs">已啟動方案比較</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-[#F7F3ED] p-4 rounded-2xl border border-[#E8DED2]">
+                        <span class="text-xs text-[#8A7B70] block mb-1">總利息節省金額</span>
+                        <span id="compSavedInterest" class="text-lg font-bold text-emerald-700">NT$ 0</span>
+                    </div>
+                    <div class="bg-[#F7F3ED] p-4 rounded-2xl border border-[#E8DED2]">
+                        <span class="text-xs text-[#8A7B70] block mb-1">提前還款本金總額</span>
+                        <span id="compTotalPrepay" class="text-lg font-bold text-[#493D35]">NT$ 0</span>
+                    </div>
+                    <div class="bg-[#F7F3ED] p-4 rounded-2xl border border-[#E8DED2]">
+                        <span class="text-xs text-[#8A7B70] block mb-1">縮短貸款時間</span>
+                        <span id="compTimeSaved" class="text-lg font-bold text-[#A68A72]">0 期 (0 年)</span>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="border-b border-[#E8DED2] text-[#8A7B70] text-xs">
+                                <th class="pb-3 font-semibold">評估項目</th>
+                                <th class="pb-3 font-semibold">原始方案</th>
+                                <th class="pb-3 font-semibold">提前還款方案</th>
+                                <th class="pb-3 font-semibold text-right">差異比較</th>
+                            </tr>
+                        </thead>
+                        <tbody id="compTableBody" class="divide-y divide-[#E8DED2]/60 text-[#493D35]">
+                            <!-- 動態插入 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 免責聲明提示 -->
+            <div class="bg-[#FFFCF8] p-4 rounded-2xl border border-[#E8DED2] text-xs text-[#8A7B70] leading-relaxed">
+                <strong>銀行提前清償提醒：</strong> 本試算以固定利率及指定的提前還款條件估算，未納入銀行個別提前清償限制、違約金及手續費。實際結果請以貸款契約及銀行試算為準。
+            </div>
+
+            <div class="flex justify-between pt-2">
+                <button onclick="switchTab('settings')" class="px-5 py-2.5 rounded-2xl border border-[#E8DED2] text-[#8A7B70] hover:text-[#493D35] font-semibold text-sm transition-colors">
+                    修改貸款條件
+                </button>
+                <button onclick="switchTab('schedule')" class="px-6 py-2.5 rounded-2xl bg-[#A68A72] hover:bg-[#8A7B70] text-[#FFFCF8] font-semibold text-sm shadow-sm transition-colors flex items-center gap-2">
+                    查看完整還款明細
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- TAB 3: 還款明細 -->
+        <section id="tab-schedule" class="space-y-6 hidden">
+            <!-- 明細摘要與篩選 Card -->
+            <div class="bg-[#FFFCF8] rounded-3xl p-6 border border-[#E8DED2] shadow-sm space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#E8DED2] pb-4 gap-3">
+                    <div>
+                        <h2 class="text-base font-bold text-[#493D35] flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-[#A68A72]"></span>
+                            逐期攤還明細表
+                        </h2>
+                        <p class="text-xs text-[#8A7B70]">完整記錄每一期本金、利息與餘額變化</p>
+                    </div>
+
+                    <!-- 篩選器按鈕群 -->
+                    <div class="flex flex-wrap gap-1.5 bg-[#F7F3ED] p-1 rounded-xl border border-[#E8DED2]">
+                        <button onclick="setScheduleFilter('all')" id="filter-btn-all" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors bg-[#A68A72] text-[#FFFCF8]">全部期數</button>
+                        <button onclick="setScheduleFilter('1-12')" id="filter-btn-1-12" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors text-[#8A7B70] hover:text-[#493D35]">前 12 期</button>
+                        <button onclick="setScheduleFilter('13-60')" id="filter-btn-13-60" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors text-[#8A7B70] hover:text-[#493D35]">第 13-60 期</button>
+                    </div>
+                </div>
+
+                <!-- 明細摘要資訊 -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="bg-[#F7F3ED] p-3.5 rounded-2xl border border-[#E8DED2]/60">
+                        <span class="text-xs text-[#8A7B70] block mb-0.5">總貸款期數</span>
+                        <span id="schedTotalPeriods" class="text-base font-bold text-[#493D35]">360 期</span>
+                    </div>
+                    <div class="bg-[#F7F3ED] p-3.5 rounded-2xl border border-[#E8DED2]/60">
+                        <span class="text-xs text-[#8A7B70] block mb-0.5">提前還款事件</span>
+                        <span id="schedPrepayCount" class="text-base font-bold text-[#A68A72]">0 筆</span>
+                    </div>
+                    <div class="bg-[#F7F3ED] p-3.5 rounded-2xl border border-[#E8DED2]/60">
+                        <span class="text-xs text-[#8A7B70] block mb-0.5">預計結清期數</span>
+                        <span id="schedPayoffPeriod" class="text-base font-bold text-[#493D35]">360 期</span>
+                    </div>
+                    <div class="bg-[#F7F3ED] p-3.5 rounded-2xl border border-[#E8DED2]/60">
+                        <span class="text-xs text-[#8A7B70] block mb-0.5">總支付利息</span>
+                        <span id="schedTotalInterest" class="text-base font-bold text-[#8A7B70]">NT$ 0</span>
+                    </div>
+                </div>
+
+                <!-- 表格容器 -->
+                <div class="border border-[#E8DED2] rounded-2xl overflow-hidden bg-[#FFFCF8]">
+                    <div class="overflow-x-auto max-h-[500px]">
+                        <table class="w-full text-left text-sm border-collapse">
+                            <thead class="bg-[#F7F3ED] text-[#8A7B70] uppercase text-xs sticky top-0 z-10 border-b border-[#E8DED2]">
+                                <tr>
+                                    <th class="p-3.5 font-semibold text-center">期數</th>
+                                    <th class="p-3.5 font-semibold text-right">本金 (NT$)</th>
+                                    <th class="p-3.5 font-semibold text-right">利息 (NT$)</th>
+                                    <th class="p-3.5 font-semibold text-right">提前還款 (NT$)</th>
+                                    <th class="p-3.5 font-semibold text-right">合計支出 (NT$)</th>
+                                    <th class="p-3.5 font-semibold text-right">剩餘本金 (NT$)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scheduleTableBody" class="divide-y divide-[#E8DED2]/60 text-[#493D35]">
+                                <!-- 動態載入 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="flex justify-between pt-2">
+                    <button onclick="switchTab('results')" class="px-5 py-2.5 rounded-2xl border border-[#E8DED2] text-[#8A7B70] hover:text-[#493D35] font-semibold text-sm transition-colors">
+                        返回試算結果
+                    </button>
+                    <button onclick="switchTab('settings')" class="px-5 py-2.5 rounded-2xl bg-[#E8DED2] hover:bg-[#A68A72]/20 text-[#493D35] font-semibold text-sm transition-colors">
+                        修改貸款條件
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="max-w-4xl w-full mx-auto px-4 py-8 text-center text-xs text-[#8A7B70] space-y-2 border-t border-[#E8DED2] mt-auto">
+        <p>日式奶茶風房貸計算器 — 專為臺灣 iPhone 使用者打造的離線 PWA 工具</p>
+        <p>所有數據僅儲存於您的本機裝置，確保隱私安全。</p>
+    </footer>
+
+    <!-- Custom Modal for Alerts/Messages -->
+    <div id="customModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm hidden">
+        <div class="bg-[#FFFCF8] rounded-3xl p-6 max-w-sm w-full mx-4 border border-[#E8DED2] shadow-xl space-y-4">
+            <div class="w-12 h-12 rounded-2xl bg-[#A68A72]/10 text-[#A68A72] flex items-center justify-center mx-auto text-xl font-bold">
+                i
+            </div>
+            <div class="text-center space-y-1">
+                <h3 id="modalTitle" class="text-base font-bold text-[#493D35]">提示訊息</h3>
+                <p id="modalMessage" class="text-xs text-[#8A7B70] leading-relaxed">內容...</p>
+            </div>
+            <div class="flex gap-2 pt-2">
+                <button id="modalCancelBtn" onclick="closeModal()" class="flex-1 py-2.5 rounded-xl border border-[#E8DED2] text-[#8A7B70] font-semibold text-xs transition-colors hidden">取消</button>
+                <button id="modalConfirmBtn" onclick="closeModal()" class="flex-1 py-2.5 rounded-xl bg-[#A68A72] hover:bg-[#8A7B70] text-[#FFFCF8] font-semibold text-xs transition-colors">確定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PWA Installation Instructions Modal -->
+    <div id="installModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm hidden">
+        <div class="bg-[#FFFCF8] rounded-3xl p-6 max-w-md w-full mx-4 border border-[#E8DED2] shadow-xl space-y-4">
+            <div class="flex items-center justify-between border-b border-[#E8DED2] pb-3">
+                <h3 class="text-base font-bold text-[#493D35]">安裝至 iPhone 主畫面</h3>
+                <button onclick="closeInstallModal()" class="text-[#8A7B70] hover:text-[#493D35] p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="space-y-3 text-xs text-[#8A7B70] leading-relaxed">
+                <p>為了獲得最佳的離線體驗與全螢幕 App 顯示，請依照以下步驟將本工具加入 iPhone 主畫面：</p>
+                <ol class="list-decimal list-inside space-y-2 font-medium text-[#493D35]">
+                    <li>使用 iPhone 的 <strong class="text-[#A68A72]">Safari 瀏覽器</strong> 開啟本網頁。</li>
+                    <li>點選 Safari 下方工具列的 <strong class="text-[#A68A72]">「分享」按鈕</strong>（正方形帶有向上箭頭圖示）。</li>
+                    <li>在選單中向下捲動並點選 <strong class="text-[#A68A72]">「加入主畫面」</strong>。</li>
+                    <li>點選右上角的「加入」。首次請保持網路連線開啟一次，完成快取後即可在支援的情況下離線使用。</li>
+                </ol>
+            </div>
+            <button onclick="closeInstallModal()" class="w-full py-3 rounded-2xl bg-[#A68A72] hover:bg-[#8A7B70] text-[#FFFCF8] font-semibold text-xs transition-colors">
+                我知道了
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // --- State Management ---
+        let state = {
+            housePrice: 7500000,
+            downPaymentRatio: 30,
+            interestRate: 2.5,
+            loanTermYears: 30,
+            gracePeriodYears: 0,
+            repaymentMethod: 'equal-payment', // 'equal-payment' or 'equal-principal'
+            prepaymentEnabled: false,
+            prepayments: [
+                { id: '1', period: 36, amount: 300000, type: 'reduce-payment' },
+                { id: '2', period: 60, amount: 200000, type: 'reduce-term' }
+            ],
+            activeTab: 'settings', // 'settings', 'results', 'schedule'
+            scheduleFilter: 'all' // 'all', '1-12', '13-60'
+        };
+
+        const STORAGE_KEY = 'jp_mortgage_calc_state_v1';
+
+        // --- Initialization & LocalStorage ---
+        function getDefaultState() {
+            return {
+                housePrice: 7500000,
+                downPaymentRatio: 30,
+                interestRate: 2.5,
+                loanTermYears: 30,
+                gracePeriodYears: 0,
+                repaymentMethod: 'equal-payment',
+                prepaymentEnabled: false,
+                prepayments: [
+                    { id: '1', period: 36, amount: 300000, type: 'reduce-payment' },
+                    { id: '2', period: 60, amount: 200000, type: 'reduce-term' }
+                ],
+                activeTab: 'settings',
+                scheduleFilter: 'all'
+            };
+        }
+
+        function normalizeState(raw) {
+            const defaults = getDefaultState();
+            const s = { ...defaults, ...(raw && typeof raw === 'object' ? raw : {}) };
+
+            const finite = (v, fallback) => Number.isFinite(Number(v)) ? Number(v) : fallback;
+            s.housePrice = Math.max(0, finite(s.housePrice, defaults.housePrice));
+            s.downPaymentRatio = Math.min(90, Math.max(0, finite(s.downPaymentRatio, defaults.downPaymentRatio)));
+            s.interestRate = Math.min(15, Math.max(0, finite(s.interestRate, defaults.interestRate)));
+            s.loanTermYears = [5,10,15,20,25,30,35,40].includes(Number(s.loanTermYears)) ? Number(s.loanTermYears) : defaults.loanTermYears;
+            s.gracePeriodYears = Math.min(s.loanTermYears - 1, Math.max(0, Math.floor(finite(s.gracePeriodYears, 0))));
+            s.repaymentMethod = ['equal-payment', 'equal-principal'].includes(s.repaymentMethod) ? s.repaymentMethod : defaults.repaymentMethod;
+            s.prepaymentEnabled = Boolean(s.prepaymentEnabled);
+            s.activeTab = ['settings', 'results', 'schedule'].includes(s.activeTab) ? s.activeTab : 'settings';
+            s.scheduleFilter = ['all', '1-12', '13-60'].includes(s.scheduleFilter) ? s.scheduleFilter : 'all';
+
+            const events = Array.isArray(s.prepayments) ? s.prepayments : [];
+            s.prepayments = events.map((p, index) => ({
+                id: String(p?.id ?? `restored-${index}`).replace(/[^\w-]/g, '').slice(0, 48) || `restored-${index}`,
+                period: Math.floor(finite(p?.period, 1)),
+                amount: Math.max(0, finite(p?.amount, 0)),
+                type: p?.type === 'reduce-term' ? 'reduce-term' : 'reduce-payment'
+            })).filter(p => p.period >= 1 && p.period <= s.loanTermYears * 12 && p.amount > 0);
+
+            // 同一期若有舊資料混用兩種處理方式，統一採該期第一筆的方式，避免結果不確定。
+            const typeByPeriod = new Map();
+            s.prepayments.forEach(p => {
+                if (!typeByPeriod.has(p.period)) typeByPeriod.set(p.period, p.type);
+                else p.type = typeByPeriod.get(p.period);
+            });
+            s.prepayments.sort((a, b) => a.period - b.period);
+            return s;
+        }
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) state = normalizeState(JSON.parse(saved));
+                else state = normalizeState(state);
+            } catch (e) {
+                console.error('Failed to load state from localStorage:', e);
+                state = getDefaultState();
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                console.error('Failed to save state to localStorage:', e);
+                showModal('儲存提醒', '瀏覽器無法儲存資料，請確認裝置儲存空間或瀏覽器設定。');
+            }
+        }
+
+        function confirmResetDefaults() {
+            showModal('重設預設值', '確定要將所有設定恢復為預設值並清除提前還款紀錄嗎？', () => {
+                localStorage.removeItem(STORAGE_KEY);
+                state = getDefaultState();
+                initUI();
+                runCalculationAndRender();
+                saveState();
+                showModal('完成', '已成功恢復預設值。');
+            }, true);
+        }
+
+        // --- UI Initialization ---
+        function initUI() {
+            document.getElementById('housePrice').value = state.housePrice;
+            document.getElementById('interestRate').value = state.interestRate;
+            document.getElementById('downPaymentRatio').value = state.downPaymentRatio;
+            document.getElementById('loanTermYears').value = state.loanTermYears;
+            document.getElementById('gracePeriodYears').value = state.gracePeriodYears;
+            
+            const radios = document.getElementsByName('repaymentMethod');
+            for (let r of radios) {
+                r.checked = (r.value === state.repaymentMethod);
+            }
+
+            const prepayToggle = document.getElementById('prepaymentEnabled');
+            prepayToggle.checked = state.prepaymentEnabled;
+            togglePrepaymentToggle(false);
+
+            updateDownPaymentDisplay();
+            renderPrepaymentList();
+            switchTab(state.activeTab, false);
+            updateScheduleFilterButtons();
+        }
+
+        function handleSliderInput() {
+            const val = parseInt(document.getElementById('downPaymentRatio').value) || 0;
+            state.downPaymentRatio = val;
+            updateDownPaymentDisplay();
+            runCalculationAndRender();
+            saveState();
+        }
+
+        function updateDownPaymentDisplay() {
+            const ratio = state.downPaymentRatio;
+            const housePrice = parseFloat(document.getElementById('housePrice').value) || 0;
+            const downAmt = housePrice * (ratio / 100);
+            const loanPrin = Math.max(0, housePrice - downAmt);
+
+            document.getElementById('downPaymentRatioText').innerText = ratio + '%';
+            document.getElementById('downPaymentAmountText').innerText = 'NT$ ' + formatMoney(downAmt);
+            document.getElementById('loanPrincipalText').innerText = 'NT$ ' + formatMoney(loanPrin);
+        }
+
+        function handleInputChange() {
+            const housePrice = parseFloat(document.getElementById('housePrice').value);
+            const interestRate = parseFloat(document.getElementById('interestRate').value);
+            const loanTermYears = parseInt(document.getElementById('loanTermYears').value);
+            const gracePeriodYears = parseInt(document.getElementById('gracePeriodYears').value);
+            const repaymentMethod = document.querySelector('input[name="repaymentMethod"]:checked').value;
+
+            // 使用者清空欄位準備重新輸入時，暫不跳錯誤視窗。
+            if (document.getElementById('housePrice').value.trim() === '' ||
+                document.getElementById('interestRate').value.trim() === '') return;
+
+            if (!Number.isFinite(housePrice) || housePrice < 0) {
+                showModal('輸入錯誤', '房屋總價必須是大於或等於 0 的有效數字。');
+                document.getElementById('housePrice').value = state.housePrice;
+                return;
+            }
+            if (!Number.isFinite(interestRate) || interestRate < 0 || interestRate > 15) {
+                showModal('輸入錯誤', '年利率請輸入 0%～15% 之間的數值。');
+                document.getElementById('interestRate').value = state.interestRate;
+                return;
+            }
+
+            if (gracePeriodYears >= loanTermYears) {
+                showModal('提示', '寬限期不得大於或等於貸款年限。');
+                document.getElementById('gracePeriodYears').value = 0;
+                state.gracePeriodYears = 0;
+                saveState();
+                runCalculationAndRender();
+                return;
+            }
+
+            state.housePrice = housePrice;
+            state.interestRate = isNaN(interestRate) ? 0 : interestRate;
+            state.loanTermYears = loanTermYears;
+            state.gracePeriodYears = gracePeriodYears;
+            state.repaymentMethod = repaymentMethod;
+
+            updateDownPaymentDisplay();
+            runCalculationAndRender();
+            saveState();
+        }
+
+        function togglePrepaymentToggle(save = true) {
+            const isChecked = document.getElementById('prepaymentEnabled').checked;
+            state.prepaymentEnabled = isChecked;
+            const content = document.getElementById('prepaymentSectionContent');
+            if (isChecked) {
+                content.classList.remove('opacity-40', 'pointer-events-none');
+            } else {
+                content.classList.add('opacity-40', 'pointer-events-none');
+            }
+            if (save) {
+                runCalculationAndRender();
+                saveState();
+            }
+        }
+
+        // --- Tab Management ---
+        function switchTab(tabName, save = true) {
+            state.activeTab = tabName;
+            if (save) saveState();
+
+            const tabs = ['settings', 'results', 'schedule'];
+            tabs.forEach(t => {
+                const sec = document.getElementById(`tab-${t}`);
+                const btn = document.getElementById(`tab-btn-${t}`);
+                if (t === tabName) {
+                    sec.classList.remove('hidden');
+                    btn.className = "py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center flex items-center justify-center gap-1.5 bg-[#A68A72] text-[#FFFCF8] shadow-sm";
+                } else {
+                    sec.classList.add('hidden');
+                    btn.className = "py-2.5 px-3 rounded-xl text-xs sm:text-sm font-medium transition-all text-center flex items-center justify-center gap-1.5 text-[#8A7B70] hover:text-[#493D35] hover:bg-[#E8DED2]/30";
+                }
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- Prepayment Management ---
+        function addPrepaymentEvent() {
+            const period = parseInt(document.getElementById('newPrepayPeriod').value);
+            const amount = parseFloat(document.getElementById('newPrepayAmount').value);
+            const type = document.getElementById('newPrepayType').value;
+
+            if (isNaN(period) || period < 1) {
+                showModal('提示', '請輸入有效的發生期數。');
+                return;
+            }
+            if (!Number.isFinite(amount) || amount <= 0) {
+                showModal('提示', '請輸入有效且大於 0 的提前還款金額。');
+                return;
+            }
+
+            const totalPeriods = state.loanTermYears * 12;
+            if (period > totalPeriods) {
+                showModal('提示', `提前還款期數不得超過總貸款期數 (${totalPeriods} 期)。`);
+                return;
+            }
+
+            const samePeriod = state.prepayments.filter(p => Number(p.period) === period);
+            if (samePeriod.length && samePeriod.some(p => p.type !== type)) {
+                showModal('提示', '同一期的多筆提前還款，請使用相同的處理方式（降低月付或縮短年限），避免同一期套用互相衝突的策略。');
+                return;
+            }
+
+            const newEvent = {
+                id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                period,
+                amount,
+                type
+            };
+
+            state.prepayments.push(newEvent);
+            state.prepayments.sort((a, b) => a.period - b.period);
+
+            renderPrepaymentList();
+            runCalculationAndRender();
+            saveState();
+        }
+
+        function deletePrepaymentEvent(id) {
+            state.prepayments = state.prepayments.filter(p => p.id !== id);
+            renderPrepaymentList();
+            runCalculationAndRender();
+            saveState();
+        }
+
+        function renderPrepaymentList() {
+            const container = document.getElementById('prepaymentListContainer');
+            if (!state.prepayments || state.prepayments.length === 0) {
+                container.innerHTML = `<div class="p-4 text-center text-xs text-[#8A7B70] bg-[#FFFCF8] rounded-xl border border-[#E8DED2]">尚未設定任何提前還款事件</div>`;
+                return;
+            }
+
+            let html = '';
+            state.prepayments.forEach((p, idx) => {
+                const safeId = String(p.id).replace(/[^\w-]/g, '');
+                const safePeriod = Math.max(1, Math.floor(Number(p.period) || 1));
+                const safeAmount = Math.max(0, Number(p.amount) || 0);
+                const typeText = p.type === 'reduce-payment' ? '降低每月月付金' : '縮短貸款年限';
+                html += `
+                    <div class="flex items-center justify-between p-3 bg-[#FFFCF8] rounded-xl border border-[#E8DED2] text-xs">
+                        <div class="flex items-center gap-3">
+                            <span class="w-6 h-6 rounded-full bg-[#A68A72]/10 text-[#A68A72] flex items-center justify-center font-bold">${idx + 1}</span>
+                            <div>
+                                <span class="font-bold text-[#493D35]">第 ${safePeriod} 期</span>
+                                <span class="text-[#8A7B70] mx-1">|</span>
+                                <span class="font-semibold text-[#A68A72]">NT$ ${formatMoney(safeAmount)}</span>
+                                <span class="text-[#8A7B70] mx-1">|</span>
+                                <span class="text-[#8A7B70]">${typeText}</span>
+                            </div>
+                        </div>
+                        <button onclick="deletePrepaymentEvent('${safeId}')" class="text-[#8A7B70] hover:text-red-600 font-medium px-2 py-1 rounded-lg hover:bg-red-50 transition-colors">
+                            刪除
+                        </button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // --- Mortgage Calculation Engine ---
+        // 計算慣例：每期先計算並支付當期利息及約定本金，再於期末執行額外還本。
+        // 降低月付：維持原結清日期，重新攤還剩餘本金。
+        // 縮短年限：維持原約定月付／本金額度，讓貸款提早結清。
+        function calculateMortgage(isPrepayActive) {
+            const housePrice = Number(state.housePrice);
+            const downRatio = Number(state.downPaymentRatio) / 100;
+            const initialPrincipal = Math.max(0, housePrice * (1 - downRatio));
+            const monthlyRate = Number(state.interestRate) / 100 / 12;
+            const totalMonths = Number(state.loanTermYears) * 12;
+            const graceMonths = Number(state.gracePeriodYears) * 12;
+            const method = state.repaymentMethod;
+
+            const emptyResult = {
+                initialPrincipal: 0, totalInterest: 0, totalPayment: 0,
+                payoffPeriod: 0, gracePayment: 0, regularPayment: 0,
+                firstPayment: 0, lastPayment: 0, schedule: [],
+                totalPrepayAmount: 0
+            };
+            if (!Number.isFinite(initialPrincipal) || initialPrincipal <= 0 || totalMonths <= 0) return emptyResult;
+
+            const events = (isPrepayActive && state.prepaymentEnabled && Array.isArray(state.prepayments))
+                ? state.prepayments
+                    .filter(e => Number.isInteger(Number(e.period)) && Number(e.period) >= 1 &&
+                        Number(e.period) <= totalMonths && Number(e.amount) > 0)
+                    .slice()
+                : [];
+
+            const eventsByMonth = new Map();
+            events.forEach(event => {
+                const period = Number(event.period);
+                if (!eventsByMonth.has(period)) eventsByMonth.set(period, []);
+                eventsByMonth.get(period).push({
+                    amount: Math.max(0, Number(event.amount)),
+                    type: event.type === 'reduce-term' ? 'reduce-term' : 'reduce-payment'
+                });
+            });
+
+            const remainingAmortMonths = totalMonths - graceMonths;
+            let balance = initialPrincipal;
+            let totalInterest = 0;
+            let totalPrepayAmount = 0;
+            let monthlyPayment = 0;
+            let fixedPrincipal = 0;
+            const schedule = [];
+            let gracePayment = 0;
+            let firstRegularPayment = 0;
+
+            function annuityPayment(principal, rate, months) {
+                if (months <= 0 || principal <= 0) return 0;
+                if (rate === 0) return Math.round(principal / months);
+                const factor = Math.pow(1 + rate, months);
+                return Math.round(principal * rate * factor / (factor - 1));
+            }
+
+            if (method === 'equal-payment') {
+                monthlyPayment = annuityPayment(initialPrincipal, monthlyRate, remainingAmortMonths);
+            } else if (remainingAmortMonths > 0) {
+                fixedPrincipal = Math.round(initialPrincipal / remainingAmortMonths);
+            }
+
+            for (let month = 1; month <= totalMonths && balance > 0.005; month++) {
+                const interest = Math.round(balance * monthlyRate);
+                const inGrace = month <= graceMonths;
+                let scheduledPrincipal = 0;
+                let scheduledPayment = interest;
+
+                if (!inGrace) {
+                    if (method === 'equal-payment') {
+                        scheduledPayment = monthlyPayment;
+                        scheduledPrincipal = Math.min(balance, Math.max(0, scheduledPayment - interest));
+                    } else {
+                        scheduledPrincipal = Math.min(balance, Math.max(0, fixedPrincipal));
+                        scheduledPayment = scheduledPrincipal + interest;
+                    }
+                    // 最後一期直接清償剩餘本金，避免每期四捨五入累積造成尾款殘額。
+                    if (month === totalMonths) {
+                        scheduledPrincipal = balance;
+                        scheduledPayment = scheduledPrincipal + interest;
+                    }
+                }
+
+                if (inGrace && month === 1) gracePayment = interest;
+
+                // 當期例行本金先扣除，再逐筆計入額外還本，避免同一期多筆事件重複使用同一筆剩餘本金。
+                balance = Math.max(0, balance - scheduledPrincipal);
+                let prepayThisMonth = 0;
+                const monthEvents = eventsByMonth.get(month) || [];
+                for (const event of monthEvents) {
+                    const actual = Math.min(event.amount, balance);
+                    if (actual > 0) {
+                        balance -= actual;
+                        prepayThisMonth += actual;
+                        totalPrepayAmount += actual;
+                    }
+                    if (balance <= 0.005) {
+                        balance = 0;
+                        break;
+                    }
+                }
+
+                const totalOutflow = interest + scheduledPrincipal + prepayThisMonth;
+                totalInterest += interest;
+
+                schedule.push({
+                    period: month,
+                    principal: scheduledPrincipal,
+                    interest,
+                    prepay: prepayThisMonth,
+                    total: totalOutflow,
+                    basePayment: interest + scheduledPrincipal,
+                    remaining: balance
+                });
+
+                if (!inGrace && firstRegularPayment === 0) {
+                    firstRegularPayment = interest + scheduledPrincipal;
+                }
+
+                if (balance <= 0.005) {
+                    balance = 0;
+                    break;
+                }
+
+                // 本期有提前還本時，依該期設定方式更新「下一期起」的攤還基準。
+                if (prepayThisMonth > 0 && monthEvents.length > 0) {
+                    const strategy = monthEvents[0].type;
+                    const futureAmortMonths = totalMonths - Math.max(month, graceMonths);
+                    if (futureAmortMonths > 0) {
+                        if (strategy === 'reduce-payment') {
+                            if (method === 'equal-payment') {
+                                monthlyPayment = annuityPayment(balance, monthlyRate, futureAmortMonths);
+                            } else {
+                                fixedPrincipal = Math.round(balance / futureAmortMonths);
+                            }
+                        }
+                        // reduce-term：保留原月付金或固定本金，僅因本金降低而提早結清。
+                    }
+                }
+            }
+
+            const payoffPeriod = schedule.length ? schedule[schedule.length - 1].period : 0;
+            const firstPayment = schedule.length ? schedule[0].total : 0;
+            const lastPayment = schedule.length ? schedule[schedule.length - 1].total : 0;
+
+            return {
+                initialPrincipal,
+                totalInterest,
+                // 本息總支出 = 原始貸款本金 + 全期利息；提前還本是本金償還方式改變，不是額外成本。
+                totalPayment: initialPrincipal + totalInterest,
+                payoffPeriod,
+                gracePayment,
+                regularPayment: firstRegularPayment,
+                firstPayment,
+                lastPayment,
+                schedule,
+                totalPrepayAmount
+            };
+        }
+
+        // --- Run Calculation and Update UI ---
+        function runCalculationAndRender() {
+            // 1. Calculate original (without prepayment)
+            const origResult = calculateMortgage(false);
+            // 2. Calculate with prepayment
+            const prepayResult = calculateMortgage(true);
+
+            // Update Results Tab UI
+            document.getElementById('resHousePrice').innerText = 'NT$ ' + formatMoney(state.housePrice);
+            document.getElementById('resLoanPrincipal').innerText = 'NT$ ' + formatMoney(origResult.initialPrincipal);
+            document.getElementById('resTotalInterest').innerText = 'NT$ ' + formatMoney(prepayResult.totalInterest);
+            document.getElementById('resTotalPayment').innerText = 'NT$ ' + formatMoney(prepayResult.totalPayment);
+
+            const methodText = state.repaymentMethod === 'equal-payment' ? '本息平均攤還' : '本金平均攤還';
+            document.getElementById('resultLoanMethodBadge').innerText = methodText;
+            document.getElementById('monthlyPaymentLabel').innerText = state.gracePeriodYears > 0
+                ? '寬限期結束後首期本息'
+                : (state.repaymentMethod === 'equal-payment' ? '首期本息月付金' : '首期本息月付金 (遞減)');
+
+            // Grace period payment display
+            const graceBox = document.getElementById('gracePeriodPaymentBox');
+            if (state.gracePeriodYears > 0) {
+                graceBox.classList.remove('hidden');
+                document.getElementById('resGracePayment').innerText = 'NT$ ' + formatMoney(prepayResult.gracePayment);
+            } else {
+                graceBox.classList.add('hidden');
+            }
+
+            document.getElementById('resMonthlyPayment').innerText = 'NT$ ' + formatMoney(prepayResult.regularPayment || prepayResult.firstPayment);
+            const totalYrs = (prepayResult.payoffPeriod / 12).toFixed(1);
+            document.getElementById('resPayoffPeriod').innerText = `${prepayResult.payoffPeriod} 期 (${totalYrs} 年)`;
+
+            // Donut Chart Update
+            const totalPrin = prepayResult.initialPrincipal;
+            const totalInt = prepayResult.totalInterest;
+            const grandTotal = totalPrin + totalInt;
+            const interestRatio = grandTotal > 0 ? Math.round((totalInt / grandTotal) * 100) : 0;
+
+            document.getElementById('resInterestRatio').innerText = interestRatio + '%';
+            document.getElementById('resLegendPrincipal').innerText = 'NT$ ' + formatMoney(totalPrin);
+            document.getElementById('resLegendInterest').innerText = 'NT$ ' + formatMoney(totalInt);
+
+            // SVG Donut circumference = 2 * pi * r = 2 * 3.14159 * 40 = 251.2
+            const circumference = 251.2;
+            const prinFraction = grandTotal > 0 ? (totalPrin / grandTotal) : 1;
+            const prinDash = circumference * prinFraction;
+            const intDash = grandTotal > 0 ? circumference * (totalInt / grandTotal) : 0;
+
+            const prinRing = document.getElementById('chartPrincipalRing');
+            const intRing = document.getElementById('chartInterestRing');
+
+            prinRing.setAttribute('stroke-dasharray', `${prinDash} ${circumference - prinDash}`);
+            prinRing.setAttribute('stroke-dashoffset', '0');
+
+            intRing.setAttribute('stroke-dasharray', `${intDash} ${circumference - intDash}`);
+            intRing.setAttribute('stroke-dashoffset', `-${prinDash}`);
+
+            // Prepayment Comparison Card
+            const compCard = document.getElementById('prepaymentComparisonCard');
+            if (state.prepaymentEnabled && state.prepayments.length > 0) {
+                compCard.classList.remove('hidden');
+                const savedInt = origResult.totalInterest - prepayResult.totalInterest;
+                document.getElementById('compSavedInterest').innerText = 'NT$ ' + formatMoney(savedInt);
+                document.getElementById('compTotalPrepay').innerText = 'NT$ ' + formatMoney(prepayResult.totalPrepayAmount);
+                const timeSavedPeriods = origResult.payoffPeriod - prepayResult.payoffPeriod;
+                const timeSavedYrs = (timeSavedPeriods / 12).toFixed(1);
+                document.getElementById('compTimeSaved').innerText = `${timeSavedPeriods} 期 (${timeSavedYrs} 年)`;
+
+                let compHtml = `
+                    <tr>
+                        <td class="py-3 font-medium">總利息支出</td>
+                        <td class="py-3">NT$ ${formatMoney(origResult.totalInterest)}</td>
+                        <td class="py-3 font-bold text-[#A68A72]">NT$ ${formatMoney(prepayResult.totalInterest)}</td>
+                        <td class="py-3 text-right font-bold text-emerald-700">節省 NT$ ${formatMoney(savedInt)}</td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 font-medium">預計結清期數</td>
+                        <td class="py-3">${origResult.payoffPeriod} 期</td>
+                        <td class="py-3 font-bold text-[#A68A72]">${prepayResult.payoffPeriod} 期</td>
+                        <td class="py-3 text-right font-bold text-[#A68A72]">縮短 ${timeSavedPeriods} 期</td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 font-medium">本息總支出</td>
+                        <td class="py-3">NT$ ${formatMoney(origResult.totalPayment)}</td>
+                        <td class="py-3 font-bold text-[#A68A72]">NT$ ${formatMoney(prepayResult.totalPayment)}</td>
+                        <td class="py-3 text-right font-bold text-emerald-700">省下 NT$ ${formatMoney(origResult.totalPayment - prepayResult.totalPayment)}</td>
+                    </tr>
+                `;
+                document.getElementById('compTableBody').innerHTML = compHtml;
+            } else {
+                compCard.classList.add('hidden');
+            }
+
+            // Update Schedule Tab Summary & Table
+            document.getElementById('schedTotalPeriods').innerText = (state.loanTermYears * 12) + ' 期';
+            document.getElementById('schedPrepayCount').innerText = state.prepaymentEnabled ? state.prepayments.length + ' 筆' : '0 筆 (未啟用)';
+            document.getElementById('schedPayoffPeriod').innerText = prepayResult.payoffPeriod + ' 期';
+            document.getElementById('schedTotalInterest').innerText = 'NT$ ' + formatMoney(prepayResult.totalInterest);
+
+            renderScheduleTable(prepayResult.schedule);
+        }
+
+        // --- Schedule Table & Filtering ---
+        let currentScheduleData = [];
+
+        function renderScheduleTable(schedule) {
+            currentScheduleData = schedule;
+            const filter = state.scheduleFilter;
+
+            let filtered = schedule;
+            if (filter === '1-12') {
+                filtered = schedule.filter(row => row.period >= 1 && row.period <= 12);
+            } else if (filter === '13-60') {
+                filtered = schedule.filter(row => row.period >= 13 && row.period <= 60);
+            }
+
+            const tbody = document.getElementById('scheduleTableBody');
+            if (!filtered || filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-[#8A7B70]">無符合條件的還款期数明細</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(row => {
+                const isPrepayRow = row.prepay > 0;
+                html += `
+                    <tr class="hover:bg-[#F7F3ED]/60 transition-colors ${isPrepayRow ? 'bg-[#A68A72]/5' : ''}">
+                        <td class="p-3.5 text-center font-bold text-[#493D35]">${row.period}</td>
+                        <td class="p-3.5 text-right font-medium text-[#493D35]">NT$ ${formatMoney(row.principal)}</td>
+                        <td class="p-3.5 text-right font-medium text-[#8A7B70]">NT$ ${formatMoney(row.interest)}</td>
+                        <td class="p-3.5 text-right font-semibold ${isPrepayRow ? 'text-[#A68A72]' : 'text-[#8A7B70]'}">NT$ ${formatMoney(row.prepay)}</td>
+                        <td class="p-3.5 text-right font-bold text-[#493D35]">NT$ ${formatMoney(row.total)}</td>
+                        <td class="p-3.5 text-right font-semibold text-[#493D35]">NT$ ${formatMoney(row.remaining)}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function updateScheduleFilterButtons() {
+            ['all', '1-12', '13-60'].forEach(f => {
+                const btn = document.getElementById(`filter-btn-${f}`);
+                if (!btn) return;
+                btn.className = f === state.scheduleFilter
+                    ? "px-3 py-1.5 rounded-lg text-xs font-bold transition-colors bg-[#A68A72] text-[#FFFCF8]"
+                    : "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors text-[#8A7B70] hover:text-[#493D35]";
+            });
+        }
+
+        function setScheduleFilter(filterType) {
+            state.scheduleFilter = filterType;
+            updateScheduleFilterButtons();
+            saveState();
+            renderScheduleTable(currentScheduleData);
+        }
+
+        // --- Utility Formatting ---
+        function formatMoney(amount) {
+            return Math.round(amount).toLocaleString('en-US');
+        }
+
+        // --- Custom Modal System ---
+        function showModal(title, message, onConfirm = null, showCancel = false) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMessage').innerText = message;
+            
+            const cancelBtn = document.getElementById('modalCancelBtn');
+            const confirmBtn = document.getElementById('modalConfirmBtn');
+
+            if (showCancel) {
+                cancelBtn.classList.remove('hidden');
+                cancelBtn.onclick = closeModal;
+            } else {
+                cancelBtn.classList.add('hidden');
+            }
+
+            if (onConfirm) {
+                confirmBtn.onclick = () => {
+                    closeModal();
+                    onConfirm();
+                };
+            } else {
+                confirmBtn.onclick = closeModal;
+            }
+
+            document.getElementById('customModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').classList.add('hidden');
+        }
+
+        function openInstallModal() {
+            document.getElementById('installModal').classList.remove('hidden');
+        }
+
+        function closeInstallModal() {
+            document.getElementById('installModal').classList.add('hidden');
+        }
+
+        // --- Service Worker Registration for PWA ---
+        // Service Worker 必須使用獨立同源檔案，Blob URL 無法作為可靠的註冊來源。
+        if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js', { scope: './' })
+                    .then(registration => {
+                        registration.update().catch(() => {});
+                        console.info('PWA Service Worker ready:', registration.scope);
+                    })
+                    .catch(err => console.warn('Service Worker registration failed:', err));
+            });
+        }
+
+        // --- App Startup ---
+        window.onload = function() {
+            loadState();
+            initUI();
+            runCalculationAndRender();
+        };
+    </script>
+</body>
+</html>
